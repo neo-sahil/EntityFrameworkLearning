@@ -1,0 +1,103 @@
+Enity Framework
+
+Package
+    1.Microsoft.EntityFrameworkCore.SqlServer
+    2.Microsoft.EntityFrameworkCore.Tools -- if we are using visual Studio
+    3.Microsoft.EntityFrameworkCore.Design -- if we are using vs code
+    4.Automapper.Extentions.Microsoft.DependencyInjection
+    5.Microsoft.EntityFrameworkCore.Proxies - for lazy loadings
+
+Some Basic Commands
+    1.Add-Migration IntialMigration => dotnet ef migrations add initial
+    2.Remove-Migration => dotnet ef migrations remove
+    3.update-database => dotnet ef database update
+
+Primary Key Configuration
+    1.By Convention -- like giving name like Id or EmployeeId (in which Employee is a Entity class)
+    2.By DataAnotations -- like [key] on the property
+    3.By Fluent API -- in OnModelCreating() - moduleBuilder.Entity<Employee>().HasKey(e => e.Identifire);
+
+One-To-One RelationShip
+    in this we give id of the parent entity to the child entity
+    and navigation property of the child to parent entity (like in cinema and cinemaOffers)
+
+One-To-Many RelationShip
+    in this we give id of the parent entity to the child entity
+    and a List navigation property of the child to parent entity (like in cinema and cinemahalls)
+
+Many-To-Many RelationShip
+    1.Skip Navigation - in this we avoid intermediate entity
+        this in this we put collection navigation property of each other in the entity which we want to be in many-to-many relationship
+    2.NonSkip Navigation - in this we create our intermediate entity
+        in this we create a third entity to connect two entitfa-inverse (like in MoviesActor)
+
+Configuare ConventionMethod in DbConext
+    in this we can give default conventions which will be applied on all the entities
+    examples - configurationBuilder.Properties<DateTime>().HaveColumnType("date");
+               configurationBuilder.Properties<string>().HaveMaxLength(150);
+        
+Configuration Classes
+    we give our entity wise configuarations in OnModelCreating, but by using this our code will grow and it will be unmnaged.
+    so we can use configuarations classes with each entity and do the entity specific confurarions there
+    in this we use IEntityTypeConfiguration<T>
+    and in OnModelCreating - modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+Seeding Data With Migration
+    we can do this OnModelCreating Method like
+    modelBuilder.Entity<Genre>().HasData(action, animation, comedy, scienceFiction, drama);
+
+Tracking and NoTracking
+    entity freamwork keeps tracks of the entity, which help us in the updation of those entities
+    but there is peroformace issue if we only using select query
+    so, we can use AsNoTracking() ex - context.Genres.AsNoTrackig().ToListAsync()
+    Globally option.UseQueryTrackingBehaviour(QueryTrackingBehaviour.NoTracking); -then we can use AsTracking() if we want it with some Specific queries.
+
+Automapper
+    builder.Services.AddAutoMapper(typeof(Program));
+
+Eager Loading 
+    I am using eager loading (means Include()) and entities are in many to many relationship,then i will get an error of circular dependency.
+    to solved this in dotnet 6
+    ex => builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+    
+    we can also use ThenInclude(), if we have multiple child level dependency
+    when we are confirm from the starting what we want to retrive the we should use eager loading
+
+Select Loading 
+    we can also use select loading to load only data we want , this also works with Realed data (Navigation Properties)
+    ex -> checkout the GetSelectLoading in MovieController
+
+Explicit Loading    
+    we can also use explicit loading
+    in we can load related data after checking some condition
+    ex -> checkout the GetExplicitLoading in MovieController
+
+Lazy Loading
+    first we have to install Microsoft.EntityFrameworkCore.Proxies
+    then we to go to every entity and make every navigation property vertual.
+    then we have to configure it in program class like.
+     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
+Grouping and GroupBy
+    so we can use the GroupBy method to group with a prpperty by which we want to group
+    and then we can use select method for getting data (in which we get key property which represent the grouping)
+    we can use SelectMany() to flaten multiple array into a single one
+    we can use Distinct() to point out the duplicate objects from an array
+    ex - see MoviesController -> GetGroupedByCinema
+
+Deferred Execution or dyanmic filtering
+    first we make our main collection which we want to filter IQueryable by using AsQueryable() method
+
+Entity Status ==>
+    1.Added
+    2.Modified
+    3.Unchanged
+    4.Delete
+    5.Detached
+
+
+Configuration
+we can do configurations by 3 ways
+1.By Convention
+2.By DataAnotations -- more powerfull then Convention
+3.By Fluent Api
